@@ -1,6 +1,6 @@
 package com.github.microtweak.jac4e.testing.tests.convertion;
 
-import com.github.microtweak.jac4e.core.BaseEnumAttributeConverter;
+import com.github.microtweak.jac4e.core.impl.EnumPropertyConverter;
 import com.github.microtweak.jac4e.testing.beans.Gender;
 import com.github.microtweak.jac4e.testing.beans.Payment;
 import com.github.microtweak.jac4e.testing.beans.YesNo;
@@ -15,43 +15,43 @@ public class BasicConvertTest {
 
     @Test
     public void convertEnumCharacter() {
-        BaseEnumAttributeConverter<Gender, Character> converter = new BaseEnumAttributeConverter<>(Gender.class, Character.class);
+        EnumPropertyConverter<Gender, Character> converter = new EnumPropertyConverter<>(Gender.class, Character.class);
 
         Assertions.assertAll(
-            () -> assertEquals(Gender.MALE, converter.convertToEntityAttribute('M')),
-            () -> Assertions.assertEquals((Character) 'M', converter.convertToDatabaseColumn(Gender.MALE))
+            () -> assertEquals(Gender.MALE, converter.toEnum('M')),
+            () -> assertEquals((Character) 'M', converter.toValue(Gender.MALE))
         );
     }
 
     @Test
     public void convertEnumBoolean() {
-        BaseEnumAttributeConverter<YesNo, Boolean> converter = new BaseEnumAttributeConverter<>(YesNo.class, Boolean.class);
+        EnumPropertyConverter<YesNo, Boolean> converter = new EnumPropertyConverter<>(YesNo.class, Boolean.class);
 
         Assertions.assertAll(
-            () -> assertEquals(YesNo.YES, converter.convertToEntityAttribute(true)),
-            () -> Assertions.assertEquals(true, converter.convertToDatabaseColumn(YesNo.YES))
+            () -> assertEquals(YesNo.YES, converter.toEnum(true)),
+            () -> assertEquals(true, converter.toValue(YesNo.YES))
         );
     }
 
     @Test
     public void convertEnumInteger() {
-        BaseEnumAttributeConverter<Payment, Integer> converter = new BaseEnumAttributeConverter<>(Payment.class, Integer.class);
+        EnumPropertyConverter<Payment, Integer> converter = new EnumPropertyConverter<>(Payment.class, Integer.class);
 
         Assertions.assertAll(
-            () -> assertEquals(Payment.CREDIT_CARD, converter.convertToEntityAttribute(1)),
-            () -> Assertions.assertEquals((Integer) 1, converter.convertToDatabaseColumn(Payment.CREDIT_CARD))
+            () -> assertEquals(Payment.CREDIT_CARD, converter.toEnum(1)),
+            () -> assertEquals((Integer) 1, converter.toValue(Payment.CREDIT_CARD))
         );
     }
 
     @ParameterizedTest
     @ValueSource(strings = { "false", "true" })
     public void convertFromNull(boolean errorIfValueNotPresent) {
-        BaseEnumAttributeConverter<Payment, Integer> converter = new BaseEnumAttributeConverter<>(Payment.class, Integer.class);
+        EnumPropertyConverter<Payment, Integer> converter = new EnumPropertyConverter<>(Payment.class, Integer.class);
         converter.setErrorIfValueNotPresent(errorIfValueNotPresent);
 
         Assertions.assertAll(
-            () -> Assertions.assertNull(converter.convertToDatabaseColumn(null)),
-            () -> Assertions.assertNull(converter.convertToEntityAttribute(null))
+            () -> Assertions.assertNull(converter.toEnum(null)),
+            () -> Assertions.assertNull(converter.toValue(null))
         );
     }
 

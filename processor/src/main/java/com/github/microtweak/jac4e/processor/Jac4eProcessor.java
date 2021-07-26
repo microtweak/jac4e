@@ -1,15 +1,14 @@
 package com.github.microtweak.jac4e.processor;
 
-import com.github.microtweak.jac4e.core.BaseEnumAttributeConverter;
 import com.github.microtweak.jac4e.core.EnumAttributeConverter;
 import com.github.microtweak.jac4e.core.exception.EnumMetadataException;
+import com.github.microtweak.jac4e.core.impl.EnumPropertyConverter;
 import com.squareup.javapoet.*;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedOptions;
-import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -61,7 +60,7 @@ public class Jac4eProcessor extends AbstractProcessor {
 
     private TypeElement findAttributeTypeElementByName(TypeElement enumType, String attributeName) {
         if (StringUtils.isBlank(attributeName)) {
-            attributeName = BaseEnumAttributeConverter.DEFAULT_ATTRIBUTE_NAME;
+            attributeName = EnumPropertyConverter.DEFAULT_ATTRIBUTE_NAME;
         }
 
         for (Element element : enumType.getEnclosedElements()) {
@@ -97,20 +96,23 @@ public class Jac4eProcessor extends AbstractProcessor {
 
         TypeSpec.Builder builder = TypeSpec.classBuilder(converterName)
                 .addModifiers(Modifier.PUBLIC)
-                .superclass(toParameterizedTypeName(BaseEnumAttributeConverter.class, enumTypeClassName, attributeTypeClassName))
                 .addSuperinterface(toParameterizedTypeName(AttributeConverter.class, enumTypeClassName, attributeTypeClassName));
 
         addJpaConverterAnnotation(builder, opts);
 
-        addConverterConstructor(builder, enumTypeClassName, attributeTypeClassName, opts);
+        addConverterImplementation(builder, enumTypeClassName, attributeTypeClassName, opts);
 
         return JavaFile.builder(packageName, builder.build())
                 .skipJavaLangImports(true)
                 .build();
     }
 
+    private ParameterizedTypeName toParameterizedTypeName(ClassName parameterizedType, TypeName... types) {
+        return ParameterizedTypeName.get(parameterizedType, types);
+    }
+
     private ParameterizedTypeName toParameterizedTypeName(Class<?> parameterizedType, TypeName... types) {
-        return ParameterizedTypeName.get(ClassName.get(parameterizedType), types);
+        return toParameterizedTypeName(ClassName.get(parameterizedType), types);
     }
 
     private void addJpaConverterAnnotation(TypeSpec.Builder converterBuilder, Jac4eOptions opts) {
@@ -123,20 +125,47 @@ public class Jac4eProcessor extends AbstractProcessor {
         converterBuilder.addAnnotation(builder.build());
     }
 
-    private void addConverterConstructor(TypeSpec.Builder converterBuilder, ClassName enumTypeClassName, ClassName attributeTypeClassName, Jac4eOptions opts) {
-        MethodSpec.Builder builder = MethodSpec.constructorBuilder()
+    private void addConverterImplementation(TypeSpec.Builder classBuilder, ClassName enumTypeClassName, ClassName attributeTypeClassName, Jac4eOptions opts) {
+        final FieldSpec converterField = FieldSpec.builder(toParameterizedTypeName(EnumPropertyConverter.class, enumTypeClassName, attributeTypeClassName), "converter")
+            .addModifiers(Modifier.PRIVATE, Modifier.FINAL)
+            .build();
+
+        classBuilder.addField(converterField);
+
+        final MethodSpec.Builder classConstructorBuilder = MethodSpec.constructorBuilder()
                 .addModifiers(Modifier.PUBLIC)
-                .addStatement("super($T.class, $T.class)", enumTypeClassName, attributeTypeClassName);
+                .addStatement("$L = new $T<>($T.class, $T.class)", converterField.name, ClassName.get(EnumPropertyConverter.class), enumTypeClassName, attributeTypeClassName);
 
         if (StringUtils.isNotBlank(opts.getAttributeName())) {
-            builder.addStatement("setAttributeName($S)", opts.getAttributeName());
+            classConstructorBuilder.addStatement("$L.setAttributeName($S)", converterField.name, opts.getAttributeName());
         }
 
         if (opts.isErrorIfValueNotPresent()) {
-            builder.addStatement("setErrorIfValueNotPresent($L)", true);
+            classConstructorBuilder.addStatement("$L.setErrorIfValueNotPresent($L)", converterField.name, true);
         }
 
-        converterBuilder.addMethod(builder.build());
+        classBuilder.addMethod(classConstructorBuilder.build());
+
+
+        final MethodSpec convertToDatabaseColumnMethod = MethodSpec.methodBuilder("convertToDatabaseColumn")
+                .addAnnotation(Override.class)
+                .addModifiers(Modifier.PUBLIC)
+                .returns(attributeTypeClassName)
+                .addParameter(enumTypeClassName, "attribute")
+                .addStatement("return $L.toValue(attribute)", converterField.name)
+                .build();
+
+        classBuilder.addMethod(convertToDatabaseColumnMethod);
+
+        final MethodSpec convertToEntityAttributeMethod = MethodSpec.methodBuilder("convertToEntityAttribute")
+                .addAnnotation(Override.class)
+                .addModifiers(Modifier.PUBLIC)
+                .returns(enumTypeClassName)
+                .addParameter(attributeTypeClassName, "dbData")
+                .addStatement("return $L.toEnum(dbData)", converterField.name)
+                .build();
+
+        classBuilder.addMethod(convertToEntityAttributeMethod);
     }
 
 }
