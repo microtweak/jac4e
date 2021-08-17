@@ -1,6 +1,6 @@
 package com.github.microtweak.jac4e.processor;
 
-import com.github.microtweak.jac4e.core.EnumAttributeConverter;
+import com.github.microtweak.jac4e.core.AttributeEnumerated;
 import com.github.microtweak.jac4e.core.ValueNotFoundStrategy;
 import org.apache.commons.lang3.StringUtils;
 
@@ -14,13 +14,13 @@ public class Jac4eOptions {
     public static final String PROPERTY_ATTRIBUTE_NAME = PREFIX + "attributeName";
     public static final String PROPERTY_ERROR_IF_VALUE_NOT_FOUND = PREFIX + "errorIfValueNotFound";
 
-    private final EnumAttributeConverter enumOpts;
+    private final AttributeEnumerated enumOpts;
 
     private String aptPackageName;
     private String aptAttributeName;
     private boolean aptErrorIfValueNotPresent;
 
-    public Jac4eOptions(EnumAttributeConverter enumOpts, Map<String, String> aptOptions) {
+    public Jac4eOptions(AttributeEnumerated enumOpts, Map<String, String> aptOptions) {
         this.enumOpts = enumOpts;
         aptOptions.forEach(this::setProperty);
     }
@@ -46,7 +46,7 @@ public class Jac4eOptions {
     }
 
     public String getAttributeName() {
-        return StringUtils.defaultIfBlank(enumOpts.attributeName(), aptAttributeName);
+        return StringUtils.defaultIfBlank(enumOpts.name(), aptAttributeName);
     }
 
     public boolean isAutoApply() {

@@ -8,11 +8,11 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 @Target(TYPE)
 @Retention(RUNTIME)
-public @interface EnumAttributeConverter {
+public @interface AttributeEnumerated {
 
     String packageName() default "";
 
-    String attributeName() default "";
+    String name() default "";
 
     boolean autoApply() default true;
 

@@ -1,10 +1,10 @@
 package com.github.microtweak.jac4e.testing.beans;
 
-import com.github.microtweak.jac4e.core.EnumAttributeConverter;
+import com.github.microtweak.jac4e.core.AttributeEnumerated;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
-@EnumAttributeConverter(attributeName = "isoCode", autoApply = false)
+@AttributeEnumerated(name = "isoCode", autoApply = false)
 public enum Country {
 
     AUSTRALIA("AU",61),

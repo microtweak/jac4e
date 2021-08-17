@@ -1,6 +1,6 @@
 package com.github.microtweak.jac4e.testing.beans;
 
-import com.github.microtweak.jac4e.core.EnumAttributeConverter;
+import com.github.microtweak.jac4e.core.AttributeEnumerated;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -16,7 +16,7 @@ import java.time.LocalDate;
 public class Order {
 
     @AllArgsConstructor
-    @EnumAttributeConverter
+    @AttributeEnumerated
     public enum Status {
 
         PENDING('P'),

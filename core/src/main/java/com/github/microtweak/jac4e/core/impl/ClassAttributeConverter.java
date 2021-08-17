@@ -10,13 +10,13 @@ import java.lang.reflect.Field;
 import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
-public class EnumPropertyConverter<E extends Enum<E>, V extends Serializable> extends EnumConverter<E, V> {
+public class ClassAttributeConverter<E extends Enum<E>, V extends Serializable> extends EnumConverter<E, V> {
 
     public static final String DEFAULT_ATTRIBUTE_NAME = "value";
 
     private String attributeName;
 
-    public EnumPropertyConverter(Class<E> enumType, Class<V> valueType) {
+    public ClassAttributeConverter(Class<E> enumType, Class<V> valueType) {
         super(enumType, valueType);
         attributeName = DEFAULT_ATTRIBUTE_NAME;
     }

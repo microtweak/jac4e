@@ -1,8 +1,8 @@
 package com.github.microtweak.jac4e.processor;
 
-import com.github.microtweak.jac4e.core.EnumAttributeConverter;
+import com.github.microtweak.jac4e.core.AttributeEnumerated;
 import com.github.microtweak.jac4e.core.exception.EnumMetadataException;
-import com.github.microtweak.jac4e.core.impl.EnumPropertyConverter;
+import com.github.microtweak.jac4e.core.impl.ClassAttributeConverter;
 import com.squareup.javapoet.*;
 import org.apache.commons.lang3.StringUtils;
 
@@ -28,7 +28,7 @@ public class Jac4eProcessor extends AbstractProcessor {
 
     @Override
     public Set<String> getSupportedAnnotationTypes() {
-        return Collections.singleton( EnumAttributeConverter.class.getCanonicalName() );
+        return Collections.singleton( AttributeEnumerated.class.getCanonicalName() );
     }
 
     @Override
@@ -38,14 +38,14 @@ public class Jac4eProcessor extends AbstractProcessor {
 
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
-        Set<TypeElement> annotatedEnuns = roundEnv.getElementsAnnotatedWith(EnumAttributeConverter.class).stream()
+        Set<TypeElement> annotatedEnuns = roundEnv.getElementsAnnotatedWith(AttributeEnumerated.class).stream()
                 .filter(e -> e.getKind() == ElementKind.ENUM)
                 .map(e -> (TypeElement) e)
                 .collect(Collectors.toSet());
 
         try {
             for (TypeElement enumType : annotatedEnuns) {
-                Jac4eOptions opts = new Jac4eOptions(enumType.getAnnotation(EnumAttributeConverter.class), processingEnv.getOptions());
+                Jac4eOptions opts = new Jac4eOptions(enumType.getAnnotation(AttributeEnumerated.class), processingEnv.getOptions());
 
                 TypeElement valueType = findAttributeTypeElementByName(enumType, opts.getAttributeName());
 
@@ -60,7 +60,7 @@ public class Jac4eProcessor extends AbstractProcessor {
 
     private TypeElement findAttributeTypeElementByName(TypeElement enumType, String attributeName) {
         if (StringUtils.isBlank(attributeName)) {
-            attributeName = EnumPropertyConverter.DEFAULT_ATTRIBUTE_NAME;
+            attributeName = ClassAttributeConverter.DEFAULT_ATTRIBUTE_NAME;
         }
 
         for (Element element : enumType.getEnclosedElements()) {
@@ -126,7 +126,7 @@ public class Jac4eProcessor extends AbstractProcessor {
     }
 
     private void addConverterImplementation(TypeSpec.Builder classBuilder, ClassName enumTypeClassName, ClassName attributeTypeClassName, Jac4eOptions opts) {
-        final FieldSpec converterField = FieldSpec.builder(toParameterizedTypeName(EnumPropertyConverter.class, enumTypeClassName, attributeTypeClassName), "converter")
+        final FieldSpec converterField = FieldSpec.builder(toParameterizedTypeName(ClassAttributeConverter.class, enumTypeClassName, attributeTypeClassName), "converter")
             .addModifiers(Modifier.PRIVATE, Modifier.FINAL)
             .build();
 
@@ -134,7 +134,7 @@ public class Jac4eProcessor extends AbstractProcessor {
 
         final MethodSpec.Builder classConstructorBuilder = MethodSpec.constructorBuilder()
                 .addModifiers(Modifier.PUBLIC)
-                .addStatement("$L = new $T<>($T.class, $T.class)", converterField.name, ClassName.get(EnumPropertyConverter.class), enumTypeClassName, attributeTypeClassName);
+                .addStatement("$L = new $T<>($T.class, $T.class)", converterField.name, ClassName.get(ClassAttributeConverter.class), enumTypeClassName, attributeTypeClassName);
 
         if (StringUtils.isNotBlank(opts.getAttributeName())) {
             classConstructorBuilder.addStatement("$L.setAttributeName($S)", converterField.name, opts.getAttributeName());
