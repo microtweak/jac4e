@@ -34,6 +34,7 @@
     <properties>
         <!-- Use this version to work even on bug HHH-8854 -->
         <hibernate.version>4.3.11.Final</hibernate.version>
+        <lombok.version>1.18.20</lombok.version>
     </properties>
 
     <dependencyManagement>
