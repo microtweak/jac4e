@@ -1,6 +1,6 @@
 package com.github.microtweak.jac4e.testing.tests.convertion;
 
-import com.github.microtweak.jac4e.core.impl.ClassAttributeConverter;
+import com.github.microtweak.jac4e.core.impl.ClassAttributeEnumConverter;
 import com.github.microtweak.jac4e.testing.beans.Gender;
 import com.github.microtweak.jac4e.testing.beans.Payment;
 import com.github.microtweak.jac4e.testing.beans.YesNo;
@@ -15,7 +15,7 @@ public class BasicConvertTest {
 
     @Test
     public void convertEnumCharacter() {
-        ClassAttributeConverter<Gender, Character> converter = new ClassAttributeConverter<>(Gender.class, Character.class);
+        ClassAttributeEnumConverter<Gender, Character> converter = new ClassAttributeEnumConverter<>(Gender.class, Character.class);
 
         Assertions.assertAll(
             () -> assertEquals(Gender.MALE, converter.toEnum('M')),
@@ -25,7 +25,7 @@ public class BasicConvertTest {
 
     @Test
     public void convertEnumBoolean() {
-        ClassAttributeConverter<YesNo, Boolean> converter = new ClassAttributeConverter<>(YesNo.class, Boolean.class);
+        ClassAttributeEnumConverter<YesNo, Boolean> converter = new ClassAttributeEnumConverter<>(YesNo.class, Boolean.class);
 
         Assertions.assertAll(
             () -> assertEquals(YesNo.YES, converter.toEnum(true)),
@@ -35,7 +35,7 @@ public class BasicConvertTest {
 
     @Test
     public void convertEnumInteger() {
-        ClassAttributeConverter<Payment, Integer> converter = new ClassAttributeConverter<>(Payment.class, Integer.class);
+        ClassAttributeEnumConverter<Payment, Integer> converter = new ClassAttributeEnumConverter<>(Payment.class, Integer.class);
 
         Assertions.assertAll(
             () -> assertEquals(Payment.CREDIT_CARD, converter.toEnum(1)),
@@ -46,7 +46,7 @@ public class BasicConvertTest {
     @ParameterizedTest
     @ValueSource(strings = { "false", "true" })
     public void convertFromNull(boolean errorIfValueNotPresent) {
-        ClassAttributeConverter<Payment, Integer> converter = new ClassAttributeConverter<>(Payment.class, Integer.class);
+        ClassAttributeEnumConverter<Payment, Integer> converter = new ClassAttributeEnumConverter<>(Payment.class, Integer.class);
         converter.setErrorIfValueNotPresent(errorIfValueNotPresent);
 
         Assertions.assertAll(

@@ -3,7 +3,7 @@ package com.github.microtweak.jac4e.testing.tests.convertion;
 import com.github.microtweak.jac4e.core.exception.EnumMetadataException;
 import com.github.microtweak.jac4e.core.exception.EnumValueDuplicateException;
 import com.github.microtweak.jac4e.core.exception.EnumValueNotPresentException;
-import com.github.microtweak.jac4e.core.impl.ClassAttributeConverter;
+import com.github.microtweak.jac4e.core.impl.ClassAttributeEnumConverter;
 import com.github.microtweak.jac4e.testing.beans.Country;
 import com.github.microtweak.jac4e.testing.beans.Payment;
 import org.junit.jupiter.api.Assertions;
@@ -15,7 +15,7 @@ public class CustomOptionsConvertTest {
 
     @Test
     public void convertEnumWithCustomAttributeName() {
-        ClassAttributeConverter<Country, String> converter = new ClassAttributeConverter<>(Country.class, String.class);
+        ClassAttributeEnumConverter<Country, String> converter = new ClassAttributeEnumConverter<>(Country.class, String.class);
 
         Assertions.assertThrows(EnumMetadataException.class, () -> assertEquals(Country.AUSTRALIA, converter.toEnum("AU")));
 
@@ -29,7 +29,7 @@ public class CustomOptionsConvertTest {
 
     @Test
     public void errorOnDuplicateValues() {
-        ClassAttributeConverter<Country, Integer> converter = new ClassAttributeConverter<>(Country.class, Integer.class);
+        ClassAttributeEnumConverter<Country, Integer> converter = new ClassAttributeEnumConverter<>(Country.class, Integer.class);
         converter.setAttributeName("callingCode");
 
         Assertions.assertThrows(EnumValueDuplicateException.class, () -> assertEquals(Country.UNITED_STATES, converter.toEnum(1)));
@@ -37,7 +37,7 @@ public class CustomOptionsConvertTest {
 
     @Test
     public void convertEnumWithUnknownValue() {
-        ClassAttributeConverter<Payment, Integer> converter = new ClassAttributeConverter<>(Payment.class, Integer.class);
+        ClassAttributeEnumConverter<Payment, Integer> converter = new ClassAttributeEnumConverter<>(Payment.class, Integer.class);
 
         Assertions.assertNull(converter.toEnum(100));
 
