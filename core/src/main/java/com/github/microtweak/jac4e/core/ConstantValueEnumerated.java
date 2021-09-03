@@ -13,7 +13,7 @@ public @interface ConstantValueEnumerated {
 
     String packageName() default "";
 
-    Class<? extends Serializable> value() default String.class;
+    ValueType value() default ValueType.STRING;
 
     boolean autoApply() default true;
 

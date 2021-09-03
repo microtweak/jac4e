@@ -47,6 +47,7 @@
                 <configuration>
                     <services>
                         <param>javax.annotation.processing.Processor</param>
+                        <param>com.github.microtweak.jac4e.processor.spi.JavaFileGeneratorFactory</param>
                     </services>
                 </configuration>
             </plugin>

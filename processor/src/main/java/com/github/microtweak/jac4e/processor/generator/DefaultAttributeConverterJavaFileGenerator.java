@@ -7,9 +7,9 @@ import lombok.Setter;
 import lombok.experimental.Accessors;
 
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.TypeElement;
 import javax.persistence.AttributeConverter;
 import javax.persistence.Converter;
-import java.io.Serializable;
 
 import static java.lang.String.join;
 import static org.apache.commons.lang3.StringUtils.firstNonBlank;
@@ -19,9 +19,9 @@ import static org.apache.commons.lang3.StringUtils.firstNonBlank;
 @Accessors(fluent = true)
 public class DefaultAttributeConverterJavaFileGenerator implements JavaFileGenerator {
 
-    private Class<? extends Enum<?>> enumType;
-    private Class<? extends Serializable> valueType;
-    private Class<? extends EnumConverter<?, ?>> converterType;
+    private ClassName enumType;
+    private ClassName valueType;
+    private Class<? extends EnumConverter> converterType;
     private String packageName;
     private boolean autoApply;
     private boolean errorIfValueNotPresent;
@@ -44,13 +44,13 @@ public class DefaultAttributeConverterJavaFileGenerator implements JavaFileGener
         return spec.build();
     }
 
-    protected FieldSpec converterFieldSpec(Class<? extends EnumConverter<?, ?>> converterType, ClassName enumTypeClassName, ClassName valueTypeClassName) {
+    protected FieldSpec converterFieldSpec(Class<? extends EnumConverter> converterType, ClassName enumTypeClassName, ClassName valueTypeClassName) {
         return FieldSpec.builder(toParameterizedTypeName(converterType, enumTypeClassName, valueTypeClassName), "converter")
                 .addModifiers(Modifier.PRIVATE, Modifier.FINAL)
                 .build();
     }
 
-    protected MethodSpec defaultConstructorMethodSpec(FieldSpec converterField, Class<? extends EnumConverter<?, ?>> converterType, ClassName enumTypeClassName, ClassName valueTypeClassName) {
+    protected MethodSpec defaultConstructorMethodSpec(FieldSpec converterField, Class<? extends EnumConverter> converterType, ClassName enumTypeClassName, ClassName valueTypeClassName) {
         final MethodSpec.Builder spec = MethodSpec.constructorBuilder()
                 .addModifiers(Modifier.PUBLIC)
                 .addStatement("$L = new $T<>($T.class, $T.class)", converterField.name, ClassName.get(converterType), enumTypeClassName, valueTypeClassName);
@@ -88,22 +88,19 @@ public class DefaultAttributeConverterJavaFileGenerator implements JavaFileGener
     }
 
     public JavaFile toJavaFile() {
-        final ClassName enumTypeClassName = ClassName.get(enumType);
-        final ClassName valueTypeClassName = ClassName.get(valueType);
+        final String packageName = firstNonBlank(this.packageName, enumType.packageName());
+        final String converterName = join("", enumType.simpleNames()) + "AttributeConverter";
 
-        final String packageName = firstNonBlank(this.packageName, enumTypeClassName.packageName());
-        final String converterName = join("", enumTypeClassName.simpleNames()) + "AttributeConverter";
-
-        final FieldSpec converterFieldSpec = converterFieldSpec(converterType, enumTypeClassName, valueTypeClassName);
+        final FieldSpec converterFieldSpec = converterFieldSpec(converterType, enumType, valueType);
 
         final TypeSpec attributeConverterImplSpec = TypeSpec.classBuilder(converterName)
                 .addModifiers(Modifier.PUBLIC)
-                .addSuperinterface(toParameterizedTypeName(AttributeConverter.class, enumTypeClassName, valueTypeClassName))
+                .addSuperinterface(toParameterizedTypeName(AttributeConverter.class, enumType, valueType))
                 .addAnnotation( jpaConverterAnnotationSpec() )
-                .addField( converterFieldSpec(converterType, enumTypeClassName, valueTypeClassName) )
-                .addMethod( defaultConstructorMethodSpec(converterFieldSpec, converterType, enumTypeClassName, valueTypeClassName) )
-                .addMethod( convertToDatabaseColumnMethodSpec(converterFieldSpec, enumTypeClassName, valueTypeClassName) )
-                .addMethod( convertToEntityAttributeMethodSpec(converterFieldSpec, enumTypeClassName, valueTypeClassName) )
+                .addField( converterFieldSpec(converterType, enumType, valueType) )
+                .addMethod( defaultConstructorMethodSpec(converterFieldSpec, converterType, enumType, valueType) )
+                .addMethod( convertToDatabaseColumnMethodSpec(converterFieldSpec, enumType, valueType) )
+                .addMethod( convertToEntityAttributeMethodSpec(converterFieldSpec, enumType, valueType) )
                 .build();
 
         return JavaFile.builder(packageName, attributeConverterImplSpec)

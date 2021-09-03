@@ -1,7 +1,9 @@
 package com.github.microtweak.jac4e.core.impl;
 
 import com.github.microtweak.jac4e.core.ConstantValue;
+import com.github.microtweak.jac4e.core.ConstantValueEnumerated;
 import com.github.microtweak.jac4e.core.EnumConverter;
+import com.github.microtweak.jac4e.core.ValueType;
 import com.github.microtweak.jac4e.core.exception.EnumMetadataException;
 
 import java.io.Serializable;
@@ -13,8 +15,11 @@ import static org.apache.commons.lang3.reflect.FieldUtils.getDeclaredField;
 
 public class ConstantValueEnumConverter<E extends Enum<E>, V extends Serializable> extends EnumConverter<E, V> {
 
+    private final ConstantValueEnumerated enumerated;
+
     public ConstantValueEnumConverter(Class<E> enumType, Class<V> valueType) {
         super(enumType, valueType);
+        enumerated = getEnumType().getAnnotation(ConstantValueEnumerated.class);
     }
 
     @Override
@@ -27,7 +32,7 @@ public class ConstantValueEnumConverter<E extends Enum<E>, V extends Serializabl
                 throw new RuntimeException(format(msg, constantItem.name(), getEnumType().getSimpleName()));
             }
 
-            putConstant(constantItem, toParsedValue(constantValue.value().trim()));
+            putConstant(constantItem, ValueType.parseValue(enumerated.value(), constantValue.value().trim()));
         }
     }
 
@@ -38,44 +43,6 @@ public class ConstantValueEnumConverter<E extends Enum<E>, V extends Serializabl
                     final String msg = "Constant \"%s\" of enum \"%s\" is not annotated with @%s";
                     return new EnumMetadataException(format(msg, name, getEnumType().getSimpleName(), ConstantValue.class.getSimpleName()));
                 });
-    }
-
-    private V toParsedValue(String value) {
-        final Serializable result;
-
-        if (Boolean.class.equals(getValueType()) || Boolean.TYPE.equals(getValueType())) {
-            result = Boolean.parseBoolean(value);
-        }
-        else if (Character.class.equals(getValueType()) || Character.TYPE.equals(getValueType())) {
-            result = value.charAt(0);
-        }
-        else if (Byte.class.equals(getValueType()) || Byte.TYPE.equals(getValueType())) {
-            result = Byte.parseByte(value);
-        }
-        else if (Short.class.equals(getValueType()) || Short.TYPE.equals(getValueType())) {
-            result = Short.parseShort(value);
-        }
-        else if (Integer.class.equals(getValueType()) || Integer.TYPE.equals(getValueType())) {
-            result = Integer.parseInt(value);
-        }
-        else if (Float.class.equals(getValueType()) || Float.TYPE.equals(getValueType())) {
-            result = Float.parseFloat(value);
-        }
-        else if (Long.class.equals(getValueType()) || Long.TYPE.equals(getValueType())) {
-            result = Long.parseLong(value);
-        }
-        else if (Double.class.equals(getValueType()) || Double.TYPE.equals(getValueType())) {
-            result = Double.parseDouble(value);
-        }
-        else if (String.class.equals(getValueType())) {
-            result = value;
-        }
-        else {
-            final String msg = "Failure to analyze \"%s\" to \"%s\". The \"%s\" type is not supported";
-            throw new RuntimeException(format(msg, value, getValueType(), getValueType().getSimpleName()));
-        }
-
-        return getValueType().cast(result);
     }
 
 }
