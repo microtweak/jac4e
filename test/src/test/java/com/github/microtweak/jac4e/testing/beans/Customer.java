@@ -1,6 +1,6 @@
 package com.github.microtweak.jac4e.testing.beans;
 
-import com.github.microtweak.jac4e.testing.converter.CountryAttributeConverter;
+import com.github.microtweak.jac4e.testing.converter.CountryAttributeEnumeratedAttributeConverter;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
@@ -24,7 +24,7 @@ public class Customer {
     private Gender gender;
 
     @Setter
-    @Convert(converter = CountryAttributeConverter.class)
+    @Convert(converter = CountryAttributeEnumeratedAttributeConverter.class)
     private Country country;
 
 }

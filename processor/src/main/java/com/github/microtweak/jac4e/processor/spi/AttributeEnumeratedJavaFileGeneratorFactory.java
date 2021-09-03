@@ -29,6 +29,7 @@ public class AttributeEnumeratedJavaFileGeneratorFactory extends AbstractJavaFil
         return new ClassFieldAttributeConverterJavaFileGenerator()
                 .attributeName(options.getAttributeName())
                 .packageName(options.getPackageName())
+                .discriminatorName(AttributeEnumerated.class.getSimpleName())
                 .enumType(enumType)
                 .valueType(valueType)
                 .autoApply(!forceDisableAutoApply && options.isAutoApply())

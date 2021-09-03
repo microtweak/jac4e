@@ -22,6 +22,7 @@ public class ConstantValueEnumeratedJavaFileGeneratorFactory extends AbstractJav
 
         return new DefaultAttributeConverterJavaFileGenerator()
                 .packageName(options.getPackageName())
+                .discriminatorName(ConstantValueEnumerated.class.getSimpleName())
                 .enumType(enumType)
                 .valueType(valueType)
                 .autoApply(!forceDisableAutoApply && options.isAutoApply())

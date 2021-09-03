@@ -7,12 +7,11 @@ import lombok.Setter;
 import lombok.experimental.Accessors;
 
 import javax.lang.model.element.Modifier;
-import javax.lang.model.element.TypeElement;
 import javax.persistence.AttributeConverter;
 import javax.persistence.Converter;
 
 import static java.lang.String.join;
-import static org.apache.commons.lang3.StringUtils.firstNonBlank;
+import static org.apache.commons.lang3.StringUtils.*;
 
 @Getter
 @Setter
@@ -23,6 +22,7 @@ public class DefaultAttributeConverterJavaFileGenerator implements JavaFileGener
     private ClassName valueType;
     private Class<? extends EnumConverter> converterType;
     private String packageName;
+    private String discriminatorName;
     private boolean autoApply;
     private boolean errorIfValueNotPresent;
 
@@ -87,13 +87,16 @@ public class DefaultAttributeConverterJavaFileGenerator implements JavaFileGener
                 .build();
     }
 
+    protected String converterName() {
+        return join(EMPTY, enumType.simpleNames()) + defaultIfBlank(this.discriminatorName, EMPTY) + "AttributeConverter";
+    }
+
     public JavaFile toJavaFile() {
         final String packageName = firstNonBlank(this.packageName, enumType.packageName());
-        final String converterName = join("", enumType.simpleNames()) + "AttributeConverter";
-
+        
         final FieldSpec converterFieldSpec = converterFieldSpec(converterType, enumType, valueType);
 
-        final TypeSpec attributeConverterImplSpec = TypeSpec.classBuilder(converterName)
+        final TypeSpec attributeConverterImplSpec = TypeSpec.classBuilder( converterName() )
                 .addModifiers(Modifier.PUBLIC)
                 .addSuperinterface(toParameterizedTypeName(AttributeConverter.class, enumType, valueType))
                 .addAnnotation( jpaConverterAnnotationSpec() )
