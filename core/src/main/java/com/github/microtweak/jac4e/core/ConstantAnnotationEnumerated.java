@@ -1,6 +1,5 @@
 package com.github.microtweak.jac4e.core;
 
-import java.io.Serializable;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
@@ -9,7 +8,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 @Target(TYPE)
 @Retention(RUNTIME)
-public @interface ConstantValueEnumerated {
+public @interface ConstantAnnotationEnumerated {
 
     String packageName() default "";
 

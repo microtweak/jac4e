@@ -1,7 +1,7 @@
 package com.github.microtweak.jac4e.core.impl;
 
-import com.github.microtweak.jac4e.core.ConstantValue;
-import com.github.microtweak.jac4e.core.ConstantValueEnumerated;
+import com.github.microtweak.jac4e.core.ColumnValue;
+import com.github.microtweak.jac4e.core.ConstantAnnotationEnumerated;
 import com.github.microtweak.jac4e.core.ValueType;
 import com.github.microtweak.jac4e.core.exception.EnumMetadataException;
 
@@ -14,7 +14,7 @@ import static org.apache.commons.lang3.reflect.FieldUtils.getDeclaredField;
 
 public class ConstantValueEnumConverter<E extends Enum<E>, V extends Serializable> extends AbstractEnumConverter<E, V> {
 
-    private ConstantValueEnumerated enumerated;
+    private ConstantAnnotationEnumerated enumerated;
 
     public ConstantValueEnumConverter(Class<E> enumType, Class<V> valueType) {
         super(enumType, valueType);
@@ -22,27 +22,27 @@ public class ConstantValueEnumConverter<E extends Enum<E>, V extends Serializabl
 
     @Override
     protected void init() {
-        enumerated = getEnumType().getAnnotation(ConstantValueEnumerated.class);
+        enumerated = getEnumType().getAnnotation(ConstantAnnotationEnumerated.class);
     }
 
     @Override
     protected V getConstantValue(E constant) {
-        final ConstantValue constantValue = getConstantValue(constant.name());
+        final ColumnValue columnValue = getColumnValueAnnotation(constant.name());
 
-        if (isBlank(constantValue.value())) {
+        if (isBlank(columnValue.value())) {
             final String msg = "The constant \"%s\" of enum \"%s\" has an empty string as a value.";
             throw new RuntimeException(format(msg, constant.name(), getEnumType().getSimpleName()));
         }
 
-        return ValueType.parseValue(enumerated.value(), constantValue.value().trim());
+        return ValueType.parseValue(enumerated.value(), columnValue.value().trim());
     }
 
-    private ConstantValue getConstantValue(String name) {
+    private ColumnValue getColumnValueAnnotation(String name) {
         return ofNullable( getDeclaredField(getEnumType(), name) )
-                .map(constant -> constant.getAnnotation(ConstantValue.class))
+                .map(constant -> constant.getAnnotation(ColumnValue.class))
                 .orElseThrow(() -> {
                     final String msg = "Constant \"%s\" of enum \"%s\" is not annotated with @%s";
-                    return new EnumMetadataException(format(msg, name, getEnumType().getSimpleName(), ConstantValue.class.getSimpleName()));
+                    return new EnumMetadataException(format(msg, name, getEnumType().getSimpleName(), ColumnValue.class.getSimpleName()));
                 });
     }
 
