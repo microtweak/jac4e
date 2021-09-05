@@ -1,6 +1,5 @@
 package com.github.microtweak.jac4e.core.impl;
 
-import com.github.microtweak.jac4e.core.EnumConverter;
 import com.github.microtweak.jac4e.core.exception.EnumMetadataException;
 import org.apache.commons.lang3.ClassUtils;
 
@@ -10,38 +9,36 @@ import java.lang.reflect.Field;
 import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
-public class ClassAttributeEnumConverter<E extends Enum<E>, V extends Serializable> extends EnumConverter<E, V> {
+public class ClassAttributeEnumConverter<E extends Enum<E>, V extends Serializable> extends AbstractEnumConverter<E, V> {
 
     public static final String DEFAULT_ATTRIBUTE_NAME = "value";
 
     private String attributeName;
+    private Field valueAttribute;
 
     public ClassAttributeEnumConverter(Class<E> enumType, Class<V> valueType) {
         super(enumType, valueType);
         attributeName = DEFAULT_ATTRIBUTE_NAME;
     }
 
-    @SuppressWarnings("unchecked")
     @Override
-    protected void initializeConverter(E[] constants) {
-        Field enumValueAttribute = null;
-
+    protected void init() {
         try {
-            enumValueAttribute = getEnumType().getDeclaredField(attributeName);
+            valueAttribute = getEnumType().getDeclaredField(attributeName);
         } catch (NoSuchFieldException e) {
             final String msg = "There is no \"%s\" attribute declared in enum \"%s\"!";
             throw new EnumMetadataException( format(msg, attributeName, getEnumType().getName()) );
         }
 
-        checkTypeOfAttributeValue(enumValueAttribute.getType());
+        checkTypeOfAttributeValue(valueAttribute.getType());
+        valueAttribute.setAccessible(true);
+    }
 
-        enumValueAttribute.setAccessible(true);
-
+    @SuppressWarnings("unchecked")
+    @Override
+    protected V getConstantValue(E constant) {
         try {
-            for (E enumConstant : constants) {
-                V enumValue = (V) enumValueAttribute.get(enumConstant);
-                putConstant(enumConstant, enumValue);
-            }
+            return (V) valueAttribute.get(constant);
         } catch (IllegalAccessException e) {
             final String msg = "Unable to read \"%s\" attribute of enum \"%s\"!";
             throw new EnumMetadataException( format(msg, attributeName, getEnumType().getName()) );
