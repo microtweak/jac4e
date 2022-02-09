@@ -33,7 +33,7 @@
 
     <properties>
         <!-- Use this version to work even on bug HHH-8854 -->
-        <hibernate.version>4.3.11.Final</hibernate.version>
+        <hibernate.version>5.4.24.Final</hibernate.version>
     </properties>
 
     <dependencyManagement>
