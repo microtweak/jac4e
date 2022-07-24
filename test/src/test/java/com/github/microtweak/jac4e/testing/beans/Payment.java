@@ -2,6 +2,7 @@ package com.github.microtweak.jac4e.testing.beans;
 
 import com.github.microtweak.jac4e.core.AttributeEnumerated;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 
 @AllArgsConstructor
 @AttributeEnumerated
@@ -14,6 +15,7 @@ public enum Payment {
     CHECK(4),
     PAYPAL(5);
 
+    @Getter
     private int value;
 
 }
